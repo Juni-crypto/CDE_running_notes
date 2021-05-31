@@ -1,4 +1,4 @@
-# CDE_running_notes
+CDE_running_notes
 -[x] Java Basics
 -[x] JDBC
 -[x] Spring
