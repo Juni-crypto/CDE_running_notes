@@ -1,0 +1,165 @@
+
+java.sql.*;
+==========
+
+Interfaces:			                Exceptions
+============                        ==========
+Driver                                SQLException
+Connection                             BatchUpdateException
+Statement
+PreparedStatement                      SQLWarning
+ResultSet
+ResultSetMetaDat
+DatabaseMetaData
+
+
+Classes:
+=========
+DriverManager
+Types
+Date & Time
+
+
+Write a jdbc program to connect with mysql db server
+
+Ans:
+
+Step1: Register the driver
+
+Step2: Get the Connection object
+
+Step3: Get the Statement / PrepredStatement/ CallableStatement object
+
+Step4: Execute the query
+
+1.		int executeUpdate(String query);//DDL(create,alter,drop,truncate),DML(insert,update,delete)
+        |-> the no of data which is reflect in db server
+
+2.		ResultSet executeQuery(Sring query);//DRL(select)
+
+
+
+
+Step5: Close the Connection
+
+
+
+
+Write a jdbc program to insert one record into the employee table which  is having the
+following columns
+Eid int(20),Ename varchar(20),Esalary double(7,2);
+
+
+
+package com.ems.dbconnection;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DBConnection {
+
+	public static Connection getConnection() throws ClassNotFoundException, SQLException {
+		// Step1: Register the driver
+		// Driver driver = new com.mysql.jdbc.Driver();
+		// DriverManager.registerDriver(driver);
+		String className = "com.mysql.jdbc.Driver";
+		Class.forName(className);
+		System.out.println("succesfully register the driver");
+
+		// Step2: Get the Connection
+		String url = "jdbc:mysql://127.0.0.1:3306/jdbcdb";
+		String user = "root";
+		String password = "root";
+		Connection conn = DriverManager.getConnection(url, user, password);
+
+		return conn;
+	}
+
+}
+
+package com.ems.db;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import com.ems.dbconnection.DBConnection;
+
+public class FirstJdbcApplication {
+
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
+
+		Connection connection = DBConnection.getConnection();
+		System.out.println(connection);
+		connection.setAutoCommit(false);//dev is taking care of transaction
+		//Step3: Get the  Statement object
+		 Statement stmt = connection.createStatement();
+		 System.out.println(stmt);
+		 
+		 String query = " insert into employee values(1003,'rahul',60000.00)";
+		 System.out.println("Query is:"+query);
+		 
+		 //Step4: Execute the  query
+		 int no = stmt.executeUpdate(query);
+		 
+		 System.out.println(no+" is inserted in db server");
+		  
+		 //commit the data
+		 connection.commit();//invoked the commit to store perm
+		 Thread.sleep(4000);
+		 
+		 //Step5: Close the connection
+		 stmt.close();
+		 connection.close();
+		 
+		 
+		 
+		
+	}
+
+}
+
+package com.ems.db;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import com.ems.dbconnection.DBConnection;
+public class FirstJdbcApplication {
+
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, InterruptedException {
+		Connection connection = DBConnection.getConnection();
+		System.out.println(connection);
+		connection.setAutoCommit(false);//dev is taking care of transaction
+		//Step3: Get the  Statement object
+		 Statement stmt = connection.createStatement();
+		 System.out.println(stmt);
+		 
+		 String query1 = " insert into employee values(1001,'raju',30000.00)";
+		 String query2 = " insert into employee values(1002,'sunil',40000.00)";
+		 String query3 = " insert into employee values(1003,'ramesh',50000.00)";
+		 
+		 //now add all the query to the batch object with reference of statment object.
+		 stmt.addBatch(query1);
+		 stmt.addBatch(query2);
+		 stmt.addBatch(query3);
+		 
+		 //Execute the  batch  object
+		 
+		 int no[] = stmt.executeBatch();
+		 System.out.println(no.length+" of data is stored in db.");
+		 
+		 //commit the data
+		 connection.commit();//invoked the commit to store perm
+		 Thread.sleep(4000);
+		 
+		 //Step5: Close the connection
+		 stmt.close();
+		 connection.close();
+		 
+		 
+		 
+		
+	}
+
+}

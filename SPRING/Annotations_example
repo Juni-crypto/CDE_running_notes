@@ -1,0 +1,69 @@
+#Bussiness Logic
+package com.bs;
+
+public class Dummy {
+
+	public Dummy() {
+		System.out.println("Inside Bs logic");
+
+	}
+
+	public void test() {
+		System.out.println("Inside test bs");
+	}
+}
+#Client Code
+package com.client;
+
+import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bs.Dummy;
+
+public class clientcode {
+
+	public static void main(String[] args) {
+		ApplicationContext aref = new ClassPathXmlApplicationContext("spring.xml");
+		Dummy d = aref.getBean("bs", Dummy.class);
+		d.test();
+		
+	}
+
+}
+#Bussiness Servie
+package com.services;
+
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.springframework.stereotype.Component;
+@Component
+@Aspect
+public class Bsservices {
+	public Bsservices() {
+		System.out.println("default cons");
+	}
+	@Before("execution(public void com.bs.Dummy.test())")
+	public void dostuff()
+	{
+		System.out.println("Inside bs dostuff");
+	}
+}
+
+#Spring.xml
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:p="http://www.springframework.org/schema/p"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+<context:component-scan base-package="com.services"></context:component-scan>
+<bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator"></bean>
+<bean id="bs" class="com.bs.Dummy"></bean>
+
+</beans>

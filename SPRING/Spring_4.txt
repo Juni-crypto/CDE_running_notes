@@ -1,0 +1,491 @@
+Properties:
+-----------
+
+SpringApplicationWithProperties:
+=================================
+Employee.java
+package com.bms.beans;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import com.bms.db.DBUtil;
+public class Employee {
+	private int id;
+	private String name;
+	private double salary;
+	private DBUtil db;
+	
+	public  Employee() {
+		System.out.println("Emp object is created..");
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+
+	public void setDb(DBUtil db) {
+		this.db = db;
+	}
+
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+
+	}
+
+	public boolean storeData() {
+		// jdbc code
+		Connection con = null;
+		boolean flag = false;
+		PreparedStatement pstmt = null;
+		try {
+			con = db.getConnection();
+			System.out.println(con);
+			System.out.println("we got connection from mysql db");
+		
+			String query = "insert into employee values(?,?,?)";
+			System.out.println("Query" + query);
+			
+			pstmt = con.prepareStatement(query);
+			// now replace the positional parameter with ?
+			pstmt.setInt(1, this.id);//(1,1001)
+			pstmt.setString(2, this.name);//(2,RAJU)
+			pstmt.setDouble(3, this.salary);//(3,670000)
+			// excute the query
+			int no = pstmt.executeUpdate();
+			if (no >= 1) {
+				//System.out.println("No of data is stored is database is:" + no);
+				flag = true;
+			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if (con != null && pstmt != null) {
+					con.close();
+					pstmt.close();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return flag;//return true
+	}
+
+}
+
+DBUtil.java
+package com.bms.db;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
+public class DBUtil {
+	private Properties properties;
+
+	public DBUtil() {
+		System.out.println("db util object is created...");
+	}
+
+	public void setProperties(Properties properties) {
+		this.properties = properties;
+	}
+
+	public Connection getConnection() throws ClassNotFoundException, SQLException {
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection con = DriverManager.getConnection(properties.getProperty("url"), properties.getProperty("username"),
+				properties.getProperty("password"));
+
+		return con;
+	}
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<!-- Configure the  DBUtill object -->
+<bean id="db" class="com.bms.db.DBUtil">
+	<!-- Properties -->
+			<property name="properties">
+				 <props>
+				 	<prop key="url">jdbc:mysql://localhost:3306/mydb</prop>
+				 	<prop key="username">root</prop>
+				 	<prop key="password">root</prop>
+				 </props>
+			</property>
+</bean>
+
+ <!-- Configure the Employee object -->
+	<bean id="emp" class="com.bms.beans.Employee" autowire="byName"> 
+			<property name="id" value="1003"/>
+			<property name="name" value="RR"/>
+			<property name="salary" value="87000"/>
+	</bean>
+
+
+
+	
+</beans>
+
+ClientCode.java
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Employee employee = context.getBean("emp", Employee.class);
+		//employee.displayEmployeeInfo();
+		boolean flag = employee.storeData();//flag=true
+		if(flag==true) {
+			System.out.println("successfully stored in db");
+		}else {
+			System.out.println("Some Problem");
+		}
+	}
+
+
+}
+==================================================================================================
+SpringCoreApplicationByUsingConstructorInjection(autowire):
+
+
+Employee.java
+
+package com.bms.beans;
+
+public class Employee {
+	private int id;
+	private String name;
+	private double salary;
+	private Address address;
+	
+	public Employee(int  id,String name,double salary,Address address) {
+		this.id = id;
+		this.name = name;
+		this.salary= salary;
+		this.address = address;
+	}
+	
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+		System.out.println(address.toString());
+	}
+}
+
+Address.java
+package com.bms.beans;
+
+//Bean
+public class Address {
+	String street;
+	String city;
+	String state;
+
+	public Address(String street, String city, String state) {
+		System.out.println("address constructor is invoked...");
+		this.street = street;
+		this.city = city;
+		this.state = state;
+	}
+
+	@Override
+	public String toString() {
+		return "Address [street=" + street + ", city=" + city + ", state=" + state + "]";
+	}
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<!-- Configure the  Address object -->
+
+<bean id="address1" class="com.bms.beans.Address">
+	<constructor-arg value="railway station road" index="0"/>
+	<constructor-arg value="vikarabad" index="1"/>
+	<constructor-arg value="ts" index="2"/>
+</bean>
+
+<bean id="emp" class="com.bms.beans.Employee" autowire="constructor" >
+	<constructor-arg name="id" value="1001"/>  
+	<constructor-arg name="name" value="RAJU"/>
+	<constructor-arg name="salary" value="40000"/>
+</bean>
+	
+</beans>
+
+ClienCode.java
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Employee employee = context.getBean("emp", Employee.class);
+		employee.displayEmployeeInfo();
+	}
+
+
+}
+===================================================================================================
+InnerBean:
+------------
+Employee.java
+package com.bms.beans;
+
+public class Employee {
+	private int id;
+	private String name;
+	private double salary;
+	private Address address;
+	
+	public Employee(int  id,String name,double salary,Address address) {
+		this.id = id;
+		this.name = name;
+		this.salary= salary;
+		this.address = address;
+	}
+	
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+		System.out.println(address.toString());
+	}
+}
+
+Address.java : same as above
+
+ClientCode.java : same as above
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<!-- Configure the  Address object -->
+
+
+<bean id="emp" class="com.bms.beans.Employee">
+	<constructor-arg name="id" value="1001"/>  
+	<constructor-arg name="name" value="RAJU"/>
+	<constructor-arg name="salary" value="40000"/>
+	<constructor-arg name="address">
+			<bean class="com.bms.beans.Address">
+				<constructor-arg value="railway station road" index="0"/>
+				<constructor-arg value="vikarabad" index="1"/>
+				<constructor-arg value="ts" index="2"/>
+			</bean>
+	</constructor-arg>
+	
+</bean>
+	
+</beans>
+==================================================================================================
+
+Annonation:
+===========
+
+@Override , @SuppressWarning etc......
+===================================================================================================
+
+
+Spring Framework:
+==================
+|-> Spring with configuration file(spring xml file)
+
+|-> Spring with  Annonation Based
+
+Spring Core Annonation:
+========================
+I. @Requried: 
+II.@Autowired
+III.@Qualifier
+
+
+Example:
+========
+Employee.java
+package com.bms.beans;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Required;
+
+
+public class Employee {
+	private int id;
+	private String name;
+	private double salary;
+	
+	@Autowired
+	@Qualifier(value="address2")
+    private Address address;
+	
+ 
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+
+	
+	public void display() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+		System.out.println(address.toString());
+	}
+
+}
+
+Address.java
+package com.bms.beans;
+
+public class Address {
+	private String street;
+	private String city;
+	private String state;
+
+	public void setStreet(String street) {
+		this.street = street;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+	@Override
+	public String toString() {
+		return "Address [street=" + street + ", city=" + city + ", state=" + state + "]";
+	}
+
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<context:annotation-config/>
+
+<bean id="address1" class="com.bms.beans.Address">
+		<property name="street" value="rst"/>
+		<property name="city" value="hyd"/>
+		<property name="state" value="ts"/>
+</bean>
+
+<bean id="address2" class="com.bms.beans.Address">
+		<property name="street" value="gachibowli"/>
+		<property name="city" value="hyd"/>
+		<property name="state" value="ts"/>
+</bean>
+
+	<bean id="emp" class="com.bms.beans.Employee">
+		 <property name="id" value="1001"/>
+		 <property name="name" value="RAJU"/>
+		 <property name="salary" value="30000"/>
+		 
+	</bean>
+	
+</beans>
+
+spring.xml
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Employee eref = context.getBean("emp",Employee.class);
+		eref.display();
+	}
+
+}
+
+

@@ -1,0 +1,306 @@
+ JUnit:
+ =========
+ Project
+   |-> Login
+   |-> Register
+   |-> Services
+
+com.bms.sources
+	
+    Login.java
+      |-> Login Code
+      		|-> 1. The  input is alphabets
+					public void loginDetails(){..}
+
+com.bms.test
+	  |-> LoginTest.java
+	|->    public void testLoginDetails(){.....}
+           
+           public void testLoginDetailsIsAplahabets(){...}
+
+           public void testLoginDetailsEndsWith(){...}
+
+com.bms.client
+            //We can Lod the test class dynamically and check the methods which are passed.
+
+
+
+3 Components:
+==============
+1. JUnit Jupiter(JUnit 5 API)
+2. JUnit Vintage(JUnit 4 and 3 API)
+3. Integration (Mockito  , TestNg etc....)
+
+ - Work  with latest eclipse ide
+
+Junit 5 Annotations:
+===================
+
+@Test
+@DisplayName
+@BeforeEach
+@AfterEach
+@BeforeAll
+@AfterAll
+@Disabled
+@TestMethodOrder
+@RepeatedTest
+@Tag
+
+......
+
+
+Example #1:
+===========
+package com.bms.test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class TestSampleWithJupiter {
+
+	@Test
+	@DisplayName("Save Method")
+	@Order(1)
+	public void testSave() {
+		System.out.println("Save Operation has performed");
+	}
+
+	@Test
+	@DisplayName("Update Method")
+	@Order(2)
+	public void testUpdate() {
+		System.out.println("Update Operation has performed");
+	}
+
+	@Test
+	@DisplayName("Delete Method")
+	@Order(3)
+	public void testDelete() {
+		System.out.println("Delete Operation has performed");
+	}
+
+	@Test
+	@DisplayName("Search  Method")
+	//@Disabled
+	@Order(2)
+	public void testSearch() {
+		System.out.println("Search  Operations has performed");
+	}
+
+}
+
+==================================================================================================
+package com.bms.test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class TestSampleWithJupiter {
+
+	@BeforeAll
+	public static void testStartMessage() {
+		System.err.println("Welcome to test case to peform.....");
+	}
+	
+	@AfterAll
+	public static void testCleanOrEndMessage() {
+		System.err.println("Successfully  used all the test cases.....");
+	}
+	
+	
+	@BeforeEach
+	public void testGreetingEachMessage() {
+			System.out.println("--------Start Opeartion--------");
+	}
+	
+	@AfterEach
+	public void testCleanEachMessage() {
+		System.out.println("-------Close Operation-------");
+	}
+	
+	@Test
+	@DisplayName("Save Method")
+	@Order(1)
+	public void testSave() {
+		System.out.println("Save Operation has performed");
+	}
+
+	@Test
+	@DisplayName("Update Method")
+	@Order(2)
+	public void testUpdate() {
+		System.out.println("Update Operation has performed");
+	}
+
+	@Test
+	@DisplayName("Delete Method")
+	@Order(3)
+	public void testDelete() {
+		System.out.println("Delete Operation has performed");
+	}
+
+	@Test
+	@DisplayName("Search  Method")
+	@Order(2)
+	public void testSearch() {
+		System.out.println("Search  Operations has performed");
+	}
+
+}
+===================================================================================================
+package com.bms.test;
+
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.TestInfo;
+
+public class TestSampleWithJupiter {
+
+	@RepeatedTest(value = 5, name = "{displayName}-{currentRepetition}/{totalRepetitions}")
+	public void testMultipleTime(TestInfo info) {
+		// System.out.println(info.getClass().getName());
+		// System.out.println(info.getTestMethod().get().getName());
+		System.out.println("SUCCESS:" + info.getDisplayName());
+	}
+
+}
+=====================================================================================================
+
+package com.bms.test;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+public class TestSampleWithJupiter {
+
+	@Tag("dev")
+	@Test
+	public void testSave() {
+		System.out.println("Save Operation has performed");
+	}
+
+	@Tag("dev")
+	@Test
+	public void testUpdate() {
+		System.out.println("Update Operation has performed");
+	}
+
+	@Tag("prod")
+	@Test
+	public void testDelete() {
+		System.out.println("Delete Operation has performed");
+	}
+
+	@Tag("prod")
+	@Test
+	@DisplayName("Search  Method")
+	public void testSearch() {
+		System.out.println("Search  Operations has performed");
+	}
+
+
+}
+
+
+RightClick->RunConfiguration->Include and exclude tags:click on configure->Include tags and exclude tags-> Apply
+
+or
+We can add plugin  inside the  POM.xml file as below:
+
+	<build>
+		<plugins>
+			<plugin>
+				<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0-M5</version>
+					<configuration>
+							<!-- Include -->
+								<groups>dev</groups>	
+							<!-- Exclude -->
+							<excludedGroups>prod</excludedGroups>
+					</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+=====================================================================================================
+
+Assertions API:
+===============
+
+1. Assertions:
+    I. assertEquals(expected,actual)
+
+    expected :
+
+
+    actual:
+
+Example:
+========
+package com.bms.test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import com.bms.sources.EBillService;
+class TestEBillService {
+	Log log;
+
+	@BeforeEach
+	public void setUpLog() {
+		log = LogFactory.getLog(new TestEBillService().getClass());
+	}
+
+	@DisplayName("TestCase For <=50")
+	@Test
+	public void testCalc1() {
+		EBillService ebill = new EBillService(50);
+		double expected = 130.0;
+		double actual = ebill.calc();
+		if (log != null) {
+			log.info("Expected Value:" + expected);
+			log.info("Actual Value:" + actual);
+		} else {
+			System.out.println("No log object"+this.getClass());
+		}
+		assertEquals(expected, actual);
+	}
+	
+	@DisplayName("TestCase For <=100")
+	@Test
+	public void testCalc2() {
+		EBillService ebill = new EBillService(100);
+		double expected = 305.0;
+		double actual = ebill.calc();
+		if (log != null) {
+			log.info("Expected Value:" + expected);
+			log.info("Actual Value:" + actual);
+		} else {
+			System.out.println("No log object"+this.getClass());
+		}
+		assertEquals(expected, actual);
+	}
+
+}

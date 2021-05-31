@@ -1,0 +1,520 @@
+2. constructor injection
+-------------------------:
+
+-we have observed that by defualt IOC container invoked zero parameterized constructor.
+if we have not written  any  type of constructor.
+
+-We can configure into the  spring.xml file regarding the parameterized constructor.
+
+  <constructor-arg>
+
+  </constructor-arg>
+
+  since from 3.x spring people has added name attribute
+
+ -index
+ -ref
+ -type
+ -value
+ -name
+
+Employee.java
+
+package com.bms.beans;
+public class Employee {
+	int id;
+	String name;
+	String emailId;
+	double salary;
+	Address address;
+
+	public Employee() {
+		System.out.println("zero parameterized constructor is invoked.");
+	}
+	
+    public Employee(int id) {
+    	this.id = id;
+    	System.out.println("First constructor invoked.....");
+    }
+    
+    public Employee(String name) {
+    	this.name =name;
+    	System.out.println("Second  constructor invoked....");
+    }
+    
+    public Employee(String name,String emailId) {
+    	this.name = name;
+    	this.emailId = emailId;
+    	System.out.println("Third constructor invoked....");
+    }
+    
+    public Employee(int id,String name,String emailId) {
+    	this.id = id;
+    	this.name = name;
+    	this.emailId = emailId;
+    	System.out.println("Fourth constructor invoked....");
+    }
+    
+    public Employee(int id,String name,String emailId,Address address) {
+    	this.id = id;
+    	this.name = name;
+    	this.emailId = emailId;
+    	this.address = address;
+    	System.out.println("Fivth constructor invoked....");
+    }
+    
+    
+    
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+		System.out.println("EmailId:"+emailId);
+		System.out.println(address.toString());
+	}
+
+}
+
+Address.java
+
+package com.bms.beans;
+
+//Bean
+public class Address {
+	String street;
+	String city;
+	String state;
+
+	public Address(String street, String city, String state) {
+		System.out.println("address constructor is invoked...");
+		this.street = street;
+		this.city = city;
+		this.state = state;
+	}
+
+	@Override
+	public String toString() {
+		return "Address [street=" + street + ", city=" + city + ", state=" + state + "]";
+	}
+}
+
+
+
+spring.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<!-- Configure the  Address object -->
+
+<bean id="aref" class="com.bms.beans.Address">
+	<constructor-arg name="street" value="railway station road"/>
+	<constructor-arg name="city"  value="vikarabad"/>
+	<constructor-arg name="state" value="state"/>
+</bean>
+
+<bean id="emp" class="com.bms.beans.Employee">
+	<constructor-arg name="name" value="raju"/>
+	<constructor-arg name="emailId" value="raju@gmail.com"/>
+	<constructor-arg name="id" value="1001"/>
+	<constructor-arg ref="aref"/>	
+</bean>
+	
+</beans>
+
+ClientCode.java
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Employee employee = context.getBean("emp", Employee.class);
+		employee.displayEmployeeInfo();
+	}
+
+
+}
+
+===================================================================================================
+SpringApplicationWithDifferentDependecy:
+----------------------------------------
+Employee.java
+package com.bms.beans;
+public class Employee {
+	int id;
+	String name;
+	String emailId;
+	double salary;
+	
+	Address address;
+	Car car;
+	
+	
+	public Employee() {
+		System.out.println("zero parameterized constructor is invoked.");
+	}
+	
+    public Employee(int id) {
+    	this.id = id;
+    	System.out.println("First constructor invoked.....");
+    }
+    
+    public Employee(String name) {
+    	this.name =name;
+    	System.out.println("Second  constructor invoked....");
+    }
+    
+    public Employee(String name,String emailId) {
+    	this.name = name;
+    	this.emailId = emailId;
+    	System.out.println("Third constructor invoked....");
+    }
+    
+    public Employee(int id,String name,String emailId) {
+    	this.id = id;
+    	this.name = name;
+    	this.emailId = emailId;
+    	System.out.println("Fourth constructor invoked....");
+    }
+    
+    public Employee(int id,String name,String emailId,Address address) {
+    	this.id = id;
+    	this.name = name;
+    	this.emailId = emailId;
+    	this.address = address;
+    	System.out.println("Fivth constructor invoked....");
+    }
+    public Employee(int id,String name,double salary,String emailId,Address address,Car car) {
+    	this.id = id;
+    	this.name = name;
+    	this.emailId = emailId;
+    	this.address = address;
+    	this.car = car;
+    	System.out.println("Sixth constructor invoked....");
+    }
+    
+    
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+		System.out.println("EmailId:"+emailId);
+		System.out.println(address.toString());
+		if(car!=null)
+		car.printModel();
+	}
+
+}
+
+Address.java : is same as above
+
+Car.java
+package com.bms.beans;
+
+public class Car {
+	String model;
+
+	public Car(String model) {
+		this.model = model;
+	}
+
+	public void printModel() {
+		System.out.println("Model:" + model);
+	}
+
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<!-- Configure the  Address object -->
+
+<bean id="aref" class="com.bms.beans.Address">
+	<constructor-arg value="railway station road" index="0"/>
+	<constructor-arg value="vikarabad" index="1"/>
+	<constructor-arg value="state" index="2"/>
+</bean>
+
+<!-- Configure the Car Object -->
+<bean id="cref" class="com.bms.beans.Car">
+	<constructor-arg value="2018"/>
+</bean>
+
+
+<bean id="emp" class="com.bms.beans.Employee">
+	<constructor-arg value="raju" index="1"/>
+	<constructor-arg  value="raju@gmail.com" index="3"/>
+	<constructor-arg value="1001" index="0"/>
+	<constructor-arg ref="aref" index="4"/>
+	<constructor-arg value="30000.00" index="2"/>	
+	<constructor-arg ref="cref" index="5"/>
+</bean>
+	
+</beans>
+====================================================================================================
+SpringApplicationWithMultipleXML file:
+=====================================
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new  ClassPathXmlApplicationContext(new  String[] {"emp.xml","address.xml"});
+		Employee em = context.getBean("emp",Employee.class);
+		em.displayEmployeeInfo();
+
+	}
+
+}
+
+==================================================================================================
+Array:
+<array>
+	<value></value>
+	<value></value>
+	<value></value>
+</array>
+
+
+Collections:
+
+|-> List
+	   -ArrayList
+	   -LinkedList
+	   -Vector
+
+	<list></list>
+
+
+
+|-> Set
+	   -HashSet
+	   -LinkedHashSet
+	   -TreeSet
+  <set></set>
+
+|-> Map
+        -HashMap
+        -LinkedHashMap
+        -TreeMap
+        -Hashtable
+        -Properties
+
+   <map></map>
+
+
+
+Example: 
+SpringApplicationWithSecondaryType:
+----------------------------------
+package com.bms.beans;
+
+import java.util.List;
+import java.util.Set;
+public class Employee {
+	
+	private int id;
+	private String name;
+	private double salary;
+	
+	private List<Address> listaddress;
+    private Set<Order> ordernames;
+	
+	
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+
+	public void setListaddress(List<Address> listaddress) {
+		this.listaddress = listaddress;
+	}
+
+	public void setOrdernames(Set<Order> ordernames) {
+		this.ordernames = ordernames;
+	}
+
+	
+	public void displayEmployeeInfo() {
+		System.out.println("Id:"+id);
+		System.out.println("Name:"+name);
+		System.out.println("Salary:"+salary);
+		
+		listaddress.forEach(s->System.out.println(s));
+		ordernames.forEach(name->System.out.println(name));
+	
+	}
+}
+
+
+Address.java
+package com.bms.beans;
+
+//Bean
+public class Address {
+	String street;
+	String city;
+	String state;
+
+	public Address(String street, String city, String state) {
+		System.out.println("address constructor is invoked...");
+		this.street = street;
+		this.city = city;
+		this.state = state;
+	}
+
+	@Override
+	public String toString() {
+		return "Address [street=" + street + ", city=" + city + ", state=" + state + "]";
+	}
+}
+
+Order.java
+package com.bms.beans;
+
+public class Order {
+private int oid;
+private String oname;
+
+public  Order() {
+	System.out.println("order object is created..");
+}
+
+public void setOid(int oid) {
+	this.oid = oid;
+}
+
+public void setOname(String oname) {
+	this.oname = oname;
+}
+
+@Override
+public String toString() {
+	return "Order [oid=" + oid + ", oname=" + oname + "]";
+}
+
+
+}
+
+ClientCode.java
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Employee employee = context.getBean("emp", Employee.class);
+		employee.displayEmployeeInfo();
+	}
+
+
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<!-- Configure the  Address object -->
+
+<bean id="aref1" class="com.bms.beans.Address">
+	<constructor-arg value="railway station road" index="0"/>
+	<constructor-arg value="vikarabad" index="1"/>
+	<constructor-arg value="ts" index="2"/>
+</bean>
+
+<bean id="aref2" class="com.bms.beans.Address">
+	<constructor-arg value="gachibowli" index="0"/>
+	<constructor-arg value="hyd" index="1"/>
+	<constructor-arg value="ts" index="2"/>
+</bean>
+
+
+<!-- Configure the Orders Beans -->
+
+<bean id="order1" class="com.bms.beans.Order">
+	<property name="oid" value="2001"/>
+	<property name="oname" value="Laptop"/>
+</bean>
+
+<bean id="order2" class="com.bms.beans.Order">
+	<property name="oid" value="2002"/>
+	<property name="oname" value="TextBook"/>
+</bean>
+
+
+
+<bean id="emp" class="com.bms.beans.Employee">
+  <property name="id" value="1001"/>
+  <property name="name" value="Raju"/>
+  <property name="salary" value="60000.00"/>
+  <!-- Inject  the  List of  Address -->
+  <property name="listaddress">
+      	<list>
+      		<ref bean="aref1"/>
+      		<ref bean="aref2"/>
+      	</list>
+  </property>
+  
+  <!-- Inject the  Set of Orders -->
+	<property name="ordernames">
+			<set>
+				<ref bean="order1"/>
+				<ref bean="order2"/>
+			</set>
+	
+	</property>
+
+</bean>
+	
+</beans>
+==================================================================================================
+

@@ -1,0 +1,200 @@
+
+ Java 
+   |-> J2SE API
+         |-> Standalon application (awt,swing)
+
+   |-> JEE API
+
+
+   |-> JME API
+
+
+IOC:(Inversion of Control) 
+==========================
+
+- Architectural pattern describing an external entity(that is container) used to wire objects
+ at runtime(creation time) by injecting there dependencies.
+
+- In short connecting the  objects they  can work together in a system.
+
+
+-IOC describes that a dependency injection needs to be done by an external entity **instead of 
+creating the dependencies by the component itself.
+
+
+
+HardCoding:
+===========
+1. Command Line Arguments
+
+2. Scanner
+
+3. BufferedReader
+
+4. Properties
+Uses of XML:
+============
+ - Store and Show the details
+
+ - Other lang
+
+ - Exchange the information over on internet (like webservice(where .net application want to commuinicate with java application)
+
+ -If we want to configure the Servlet information / Jsp information / spring beans  we can use XML
+
+
+ -Use for installing the softwares
+
+
+XML Document:
+=============
+     |-> Prepration Rules:
+             I. It should contain root tag
+             II. Every tag will have starting and end tag
+             III. Can have a child tag
+             IV. attributes and attributes containe values with inclosed in single or double quotes.
+             V.  xml tags case sensitive
+             VI. xml tags can be empty
+
+
+
+When we can say  the xml is well formed document?
+Ans:
+     - If it is following the Prepration Rules , Element naming rules.
+
+
+
+How we can test the xml is valid or not?
+Ans:   
+ 
+  We can use  XML Parsers
+     1. SAX(simple api xml process)
+     2. DOM(document object model)
+
+-Every brower internall have a parse engine to check whether xml file is valid or not
+
+
+
+
+
+- We can write / use the xml tags based on dtd/xsd
+
+
+
+
+
+
+
+
+DI(Dependency injection):
+- Is a process of injecting(pushing) the dependencies into an object.
+
+
+- The objects with which an object collobrates to provides the services are known as it dependencies.
+
+
+
+1. BeanFactory
+
+
+2. ApplicationContext
+
+
+
+<bean>
+Attributes:
+id: which is used to  have reference
+
+class: we need to specify the absolute class name(or bean name) to which we need to ask IOC container to create instance.
+
+
+scope: 
+    |-> 1. singleton: It will create only one instance at a time
+
+    |-> 2. prototype: We can create many instance when we invoke
+
+
+
+Develop the simple springcoreapplication
+
+Step1: Get the following jar files:
+  1.spring-core.4.3.1.jar 
+  2.spring-beans.4.3.1.jar 
+  3.spring-context.4.3.1.jar 
+  4.spring-expression.4.3.1.jar 
+  5.commons-logging-1.2.jar 
+  
+  
+Step2: create GreetingMessage.java 
+package com.bms.beans;
+
+public interface GreetingMessage {
+	public void greetingMessage();
+}
+
+
+Step3: create GreetingMessageImpl.java 
+package com.bms.beans;
+
+//Bean Class
+public class GreetingMessageImpl implements GreetingMessage {
+	String message=" imtiaz";//instance variable(predefine type)
+
+	public GreetingMessageImpl() {
+		System.out.println("GMI object is created...");
+	}
+	
+
+	@Override
+	public void greetingMessage() {
+		// TODO Auto-generated method stub
+		System.out.println("Hello :" + message);
+	}
+
+}
+Step4:spring.xml(keep inside the src folder)
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans 
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+<!-- we need to configure the bean classes -->
+<bean id="gmi" class="com.bms.beans.GreetingMessageImpl" scope="prototype">
+
+</bean>
+
+</beans>
+
+
+Step5: create ClientCode.java 
+package com.bms.beans;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws InterruptedException {
+		/*
+		 * BeanFactory bref = new XmlBeanFactory(new ClassPathResource("spring.xml"));
+		 * GreetingMessageImpl gref1 = bref.getBean("gmi", GreetingMessageImpl.class);
+		 * GreetingMessageImpl gref2 = bref.getBean("gmi", GreetingMessageImpl.class);
+		 * GreetingMessageImpl gref3 = bref.getBean("gmi", GreetingMessageImpl.class);
+		 * 
+		 * System.out.println(gref1==gref2); System.out.println(gref2==gref3);
+		 */
+		ApplicationContext bref = new ClassPathXmlApplicationContext("spring.xml");
+		GreetingMessageImpl gref1 = bref.getBean("gmi", GreetingMessageImpl.class);
+		Thread.sleep(2000);
+		GreetingMessageImpl gref2 = bref.getBean("gmi", GreetingMessageImpl.class);
+		Thread.sleep(2000);
+		GreetingMessageImpl gref3 = bref.getBean("gmi", GreetingMessageImpl.class);
+		Thread.sleep(2000);
+		System.out.println(gref1 == gref2);
+		System.out.println(gref2 == gref3);
+
+	}
+
+}
+

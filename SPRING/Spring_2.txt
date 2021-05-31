@@ -1,0 +1,421 @@
+
+ Java 
+   |-> J2SE API
+         |-> Standalon application (awt,swing)
+
+   |-> JEE API
+
+
+   |-> JME API
+
+
+IOC:(Inversion of Control) 
+==========================
+
+- Architectural pattern describing an external entity(that is container) used to wire objects
+ at runtime(creation time) by injecting there dependencies.
+
+- In short connecting the  objects they  can work together in a system.
+
+
+-IOC describes that a dependency injection needs to be done by an external entity **instead of 
+creating the dependencies by the component itself.
+
+
+
+HardCoding:
+===========
+1. Command Line Arguments
+
+2. Scanner
+
+3. BufferedReader
+
+4. Properties
+Uses of XML:
+============
+ - Store and Show the details
+
+ - Other lang
+
+ - Exchange the information over on internet (like webservice(where .net application want to commuinicate with java application)
+
+ -If we want to configure the Servlet information / Jsp information / spring beans  we can use XML
+
+
+ -Use for installing the softwares
+
+
+XML Document:
+=============
+     |-> Prepration Rules:
+             I. It should contain root tag
+             II. Every tag will have starting and end tag
+             III. Can have a child tag
+             IV. attributes and attributes containe values with inclosed in single or double quotes.
+             V.  xml tags case sensitive
+             VI. xml tags can be empty
+
+
+
+When we can say  the xml is well formed document?
+Ans:
+     - If it is following the Prepration Rules , Element naming rules.
+
+
+
+How we can test the xml is valid or not?
+Ans:   
+ 
+  We can use  XML Parsers
+     1. SAX(simple api xml process)
+     2. DOM(document object model)
+
+-Every brower internall have a parse engine to check whether xml file is valid or not
+
+
+
+
+
+- We can write / use the xml tags based on dtd/xsd
+
+
+
+
+
+
+
+
+DI(Dependency injection):
+- Is a process of injecting(pushing) the dependencies into an object.
+
+
+- The objects with which an object collobrates to provides the services are known as it dependencies.
+
+
+
+1. BeanFactory
+
+
+2. ApplicationContext
+
+
+
+<bean>
+Attributes:
+id: which is used to  have reference
+
+class: we need to specify the absolute class name(or bean name) to which we need to ask IOC container to create instance.
+
+
+scope: 
+    |-> 1. singleton: It will create only one instance at a time
+
+    |-> 2. prototype: We can create many instance 
+
+
+1. setter injection
+
+ <bean>
+ 	
+ </bean>
+
+
+Employee.java
+package com.bms.beans;
+
+public class Employee {
+	int id;
+	String name;
+	double salary;
+	String productNames[];
+	//Employee Has-A Address
+	Address address[];//user-define 
+	
+	public Employee() {
+		System.out.println("employee object");
+	}
+
+	public void setAddress(Address[] address) {
+		this.address = address;
+	}
+	
+	public void setProductNames(String[] productNames) {
+		this.productNames = productNames;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+		System.out.println("Product Names:");
+		if(productNames!=null) { 
+		for (String product : productNames) {
+			System.out.println(product);
+		}
+		}else {
+			System.err.print("No data");
+		}
+		
+		//with  address ref we can access the data of Address class
+		for(Address aref:address) {
+			System.out.println(aref.toString());
+		}
+		
+	}
+
+}
+
+Address.java
+
+package com.bms.beans;
+//Bean
+public class Address {
+	String street;
+	String city;
+	String state;
+
+	public void setStreet(String street) {
+		this.street = street;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
+
+	@Override
+	public String toString() {
+		return "Address [street=" + street + ", city=" + city + ", state=" + state + "]";
+	}
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+<!-- configure the Address Bean class -->
+<bean id="address1" class="com.bms.beans.Address">
+     <property name="street" value="railway station"/>
+     <property name="city" value="vikarabad"/>
+     <property name="state" value="telangana"/>
+</bean>
+<bean id="address2" class="com.bms.beans.Address">
+     <property name="street" value="firstlancer"/>
+     <property name="city" value="hyderabad"/>
+     <property name="state" value="telangana"/>
+</bean>
+<!-- configure the Employee Bean class -->
+<bean id="emp" class="com.bms.beans.Employee">
+   <property name="id" value="1001"/>  
+   <property name="name" value="raju"/>
+   <property name="salary" value="450000"/>
+   <property name="productNames">
+   				<array>
+   					<value>LED</value>
+   					<value>MOBILE PHONE</value>
+   					<value>LAPTOP</value>
+   				</array>
+   </property>   
+	<property name="address">
+			<array>
+					<ref bean="address1"/>
+					<ref bean="address2"/>
+			</array>
+	</property>
+
+</bean>
+</beans>
+
+ClientCode.java
+package com.bms.client;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) {
+		
+		ApplicationContext context = new  ClassPathXmlApplicationContext("spring.xml");
+		Employee em = context.getBean("emp",Employee.class);
+		em.displayEmployeeInfo();
+
+	}
+
+}
+====================================================================================================
+Property Namespace:
+====================
+-It simply the configuration file.
+<property> tag -> 
+
+-If we want to use the property namespace we need to import the  namespace as below:
+
+Example:
+---------
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:pr="http://www.springframework.org/schema/p"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+<!-- configure the Address Bean class -->
+
+<bean id="address1" class="com.bms.beans.Address" pr:street="railway station"
+pr:city="vikarabad" pr:state="telangana">
+</bean>
+
+<bean id="address2" class="com.bms.beans.Address">
+     <property name="street" value="firstlancer"/>
+     <property name="city" value="hyderabad"/>
+     <property name="state" value="telangana"/>
+</bean>
+<!-- configure the Employee Bean class -->
+<bean id="emp" class="com.bms.beans.Employee">
+   <property name="id" value="1001"/>  
+   <property name="name" value="raju"/>
+   <property name="salary" value="450000"/>
+   <property name="productNames">
+   				<array>
+   					<value>LED</value>
+   					<value>MOBILE PHONE</value>
+   					<value>LAPTOP</value>
+   				</array>
+   </property>   
+	<property name="address">
+			<array>
+					<ref bean="address1"/>
+					<ref bean="address2"/>
+			</array>
+	</property>
+
+</bean>
+</beans>
+
+
+SpringApplicationWithProperties:
+=================================
+Employee.java
+package com.bms.beans;
+
+public class Employee {
+	int id;
+	String name;
+	double salary;
+
+	public Employee() {
+		System.out.println("employee object");
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+
+	public void displayEmployeeInfo() {
+		System.out.println("Id:" + id);
+		System.out.println("Name:" + name);
+		System.out.println("Salary:" + salary);
+	}
+
+}
+
+mydata.properties
+#Commit
+#Mon May 24 18:14:15 IST 2021
+name=RAJU
+salary=30000
+id=1001
+
+
+ClientCode.java
+
+package com.bms.client;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.Scanner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.bms.beans.Employee;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		System.out.println("Enter the Id,Name,Salary");
+		loadAndStoreTheData();
+		System.out.println("Please go and check into mydata.properties file");
+		System.in.read();
+		System.in.read();
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		Employee employee = context.getBean("emp", Employee.class);
+		employee.displayEmployeeInfo();
+	}
+
+	private static void loadAndStoreTheData() throws FileNotFoundException, IOException {
+		Scanner scanner = new Scanner(System.in);
+		Properties pr = new Properties();
+		// Read the data from the keyboard
+		String id = scanner.nextLine();
+		String name = scanner.nextLine();
+		String salary = scanner.nextLine();
+		// set the data into the properties object in the form key-value pair
+		pr.put("id", id);
+		pr.put("name", name);
+		pr.put("salary", salary);
+		// Attached the resource(mydata.properteis to the outputstream)
+		String location = "D:\\Freelancing Training Program\\NIIT&CTS\\SpringWorkSpace\\SpringIOCApplication\\src\\mydata.properties";
+		FileOutputStream fos = new FileOutputStream(location);
+		pr.store(fos, "Commit");
+	}
+
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<context:property-placeholder location="classpath:mydata.properties"/>
+
+	<!-- configure the Employee Bean class -->
+	<bean id="emp" class="com.bms.beans.Employee">
+	   <property name="id" value="${id}"/> <!-- emp.setId(1001) --> 
+	   <property name="name" value="${name}"/>
+	   <property name="salary" value="${salary}"/>	
+	</bean>
+	
+</beans>

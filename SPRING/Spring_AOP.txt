@@ -1,0 +1,262 @@
+
+
+AOP :
+-----
+A-Aspect 
+O-Oriented
+P-Programming
+
+
+Banking application
+|-> Bind
+        I.  Business Logic(Based on Business Rules)
+        II. Services(Loggers,Transaction Management,Security,etc....)
+   Bank
+
+|->withDrawAmount
+    |-> Bind(I,II)
+
+|->depositAmount
+	|-> Bind(I,II)
+
+|->CheckBalance
+	|->Bind(I)
+
+|->FundsTransfer
+    |->Bind(I,II)
+
+
+AOP Terminology:
+================
+
+1. Aspect  : A service or every system service is an aspect which is written in one place and
+later of point we can integrated.
+
+
+2.Advice   : Service Provider is one who provide implemenation for services.
+                  or
+             Is the acutal implementation of Aspect.
+
+             Advice defines both what and when of an Aspect.
+
+
+Advice Type             Interface                                  Description
+================================================================================
+Before       org.springframework.aop.MethodBeforeAdivce     called before target method is	invoked                  
+
+After       org.springframework.aop.AfterAdvice             called after target method
+
+After-returning  org.springframework.aop.AfterReturningAdvice called after target methods completes successfully
+Around      org.aopalliance.intercept.MethodInterceptor     Both Before and After
+
+After-throwing org.springframework.aop.ThrowsAdvice         called when  target methods throws
+                                                            an exception
+===============================================================================================                                                            
+3.Pointcut: Is nothing but a point  or a condition to execute the aspect for busniess logic.
+
+
+4. Advisor : Advice + Pointcut
+
+
+5. Proxy   :  Is a weaver i.e is combining the Service+BL and give the proxy object.
+
+
+6. Target  : Target class which  container  the  business components(modules).
+===========================================================================================
+
+Example:
+=========
+
+Jar File:
+1.spring-beans
+2.spring-core
+3.spring-context
+4.spring-expression
+5.spring-aop
+6.spring-aspects
+7.commons-logging
+
+
+LogBeforeMethod.java
+package com.bms.serv;
+import java.lang.reflect.Method;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.MethodBeforeAdvice;
+
+import com.bms.bl.BankAccount;
+
+
+public class LogBeforeMethod implements MethodBeforeAdvice{
+
+	@Override
+	public void before(Method method, Object[] obj, Object target) throws Throwable {
+		// TODO Auto-generated method stub
+		Log log = LogFactory.getLog(BankAccount.class);
+		log.info("user want to deposit the amount is:"+method.getName());
+
+		for(Object o:obj) {
+			log.info(o.getClass().getName());
+		}
+		log.info("target:"+target.getClass().getName());
+	
+		
+	}
+
+	
+	
+	
+}
+
+2.LogAfterAdvice.java
+package com.bms.serv;
+
+
+import java.lang.reflect.Method;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.AfterReturningAdvice;
+
+import com.bms.bl.BankAccount;
+
+public class LogAfterAdvice implements AfterReturningAdvice {
+
+	@Override
+	public void afterReturning(Object rv, Method method, Object[] o, Object target) throws Throwable {
+		// TODO Auto-generated method stub
+		Log log = LogFactory.getLog(((BankAccount)target).toString());
+		log.info("successfully  the amount is deposited");
+	}
+
+}
+
+3.LogBeforeAndAfterServ.java
+package com.bms.serv;
+
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.bms.bl.BankAccount;
+
+public class LogBeforeAndAfterServ implements MethodInterceptor {
+
+	@Override
+	public Object invoke(MethodInvocation ref) throws Throwable {
+		// TODO Auto-generated method stub
+		Log log = LogFactory.getLog(BankAccount.class);
+		log.info("user want to deposit the amount is:");
+		Object o = ref.proceed();
+		log.info("successfully  the amount is deposited");
+		return o;
+	}
+
+}
+4.BankAccount.java
+package com.bms.bl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+//BL Module
+public class BankAccount {
+	private String accountNo;
+	private int balance;
+
+	public BankAccount(String accountNo, int balance) {
+		this.accountNo = accountNo;
+		this.balance = balance;
+	}
+
+	public int  getBalance() {
+		return balance;
+	}
+	public int depositAmount(String accno, int damount) {
+		// write the business logic to deposit the amount
+		// if accno is valid otherwise return -1
+		int f = -1;
+		if (accno.equals("icici123")) {
+			this.balance = this.balance + damount;// BL
+			return this.balance;
+		} else {
+			return -1;
+		}
+
+	}
+
+}
+
+5.spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<!--
+<bean id="lbm" class="com.bms.serv.LogBeforeMethod"> </bean>	
+
+
+<bean id="lad" class="com.bms.serv.LogAfterAdvice"></bean>
+-->
+
+<!-- Configure the  LogBeforeAndAfterServ -->
+<bean id="bfs" class="com.bms.serv.LogBeforeAndAfterServ"></bean>
+
+<!-- Configure  the BL -->	
+<bean id="bacc" class="com.bms.bl.BankAccount">
+		<constructor-arg name="accountNo" value="icici123"/>
+		<constructor-arg name="balance"  value="5000"/>
+</bean>	
+
+
+
+<!-- Configure  the ProxyBeanFactory Object and inject the  dependencies(Service+BL) -->
+
+<bean id="proxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+		
+		<!-- 1.Add services to the proxy  object -->
+		<property name="interceptorNames">
+			<list>
+					<!--  
+					<value>lbm</value>
+					<value>lad</value>-->
+					<value>bfs</value>
+			</list>
+		</property>
+		
+		<!-- 2.Add target(BL class) to proxy object -->
+		<property name="targetName" value="bacc"/>
+
+</bean>
+
+</beans>
+
+6.ClientCode.java
+package com.bms.client;
+
+import java.io.IOException;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.bl.BankAccount;
+
+public class ClientCode {
+
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		BankAccount bc = context.getBean("proxy",BankAccount.class);
+		System.out.println(bc.depositAmount("icici123", 1000));
+
+	}
+
+
+}

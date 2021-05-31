@@ -1,0 +1,324 @@
+SpringDAOWithJdbcTemplet:
+=========================
+EmployeeDAO.java
+package com.bms.dao;
+
+import java.util.List;
+
+import com.bms.model.Employee;
+
+public interface EmployeeDAO {
+
+	public int insert(Employee emp) throws Exception;
+
+	public boolean update(Employee emp) throws Exception;
+
+	public boolean delete() throws Exception;
+
+	public Employee searchById(int id) throws Exception;
+
+	public Employee searchByName(String name) throws Exception;
+
+	public List<Employee> getAllEmployees() throws Exception;
+	public List<Employee> getAllEmployees1() throws Exception;
+}
+
+
+EmployeeDAOImpl.java
+package com.bms.dao;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
+
+import com.bms.model.Employee;
+
+public class EmployeeDAOImpl implements EmployeeDAO {
+	Log log = LogFactory.getLog(this.getClass());
+
+	private JdbcTemplate jtemplet;
+
+	public void setJtemplet(JdbcTemplate jtemplet) {
+		this.jtemplet = jtemplet;
+	}
+
+	@Override
+	public int insert(Employee emp) throws Exception {
+		String query = "insert into employee  values(?,?,?)";
+		// System.out.println("Query:"+query);
+		log.info("Query:" + query);
+		Object data[] = { emp.getId(), emp.getName(), emp.getSalary() };
+		int no = jtemplet.update(query, data);
+		return no;
+	}
+
+	@Override
+	public boolean update(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean delete() throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Employee searchById(int id) throws Exception {
+		// TODO Auto-generated method stub
+		String query = "select * from employee where eid=" + id;
+		return jtemplet.query(query, new ResultSetExtractor<Employee>() {
+			@Override
+			public Employee extractData(ResultSet res) throws SQLException, DataAccessException {
+				// TODO Auto-generated method stub
+				Employee e = null;
+				boolean b = res.next();
+				if (b == true) {
+					e = new Employee();
+					e.setId(res.getInt("eid"));
+					e.setName(res.getString("ename"));
+					e.setSalary(res.getDouble("esalary"));
+				}
+				return e;
+			}
+
+		});
+
+	}
+
+	@Override
+	public Employee searchByName(String name) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<Employee> getAllEmployees1() throws Exception{
+		String query = "select * from employee";
+		return jtemplet.query(query, new RowMapper<Employee>() {
+
+			@Override
+			public Employee mapRow(ResultSet res, int arg1) throws SQLException {
+				// TODO Auto-generated method stub
+				Employee emp = new Employee();
+				emp.setId(res.getInt("eid"));
+				emp.setName(res.getString("ename"));
+				emp.setSalary(res.getDouble("esalary"));
+				return emp;
+			}
+		
+		});
+	}
+	
+	
+	@Override
+	public List<Employee> getAllEmployees() throws Exception {
+		String query = "select * from employee";
+		log.info(query);
+		return jtemplet.query(query, new ResultSetExtractor<List<Employee>>() {
+			@Override
+			public List<Employee> extractData(ResultSet res) throws SQLException, DataAccessException {
+				// TODO Auto-generated method stub
+				List<Employee> list = null;
+				boolean b = res.next();
+				if (b == false)
+					return list;
+				else {
+					list = new ArrayList();
+					do {
+						Employee emp = new Employee();
+						emp.setId(res.getInt("eid"));
+						emp.setName(res.getString("ename"));
+						emp.setSalary(res.getDouble("esalary"));
+						// add to the list
+						list.add(emp);
+					} while (res.next());
+					return list;
+				}
+			}
+		});
+	}
+
+
+
+}
+
+EmployeeBO.java
+package com.bms.bs;
+
+import java.util.List;
+
+import com.bms.model.Employee;
+
+public interface EmployeeBO {
+	
+	public int  saveEmployee(Employee emp) throws Exception;
+	public boolean updateEmployee(Employee emp) throws Exception;
+	public boolean deleteEmployee(Employee emp) throws Exception;
+	public Employee searchById(int id) throws Exception;
+	public List<Employee> searchAllEmployees() throws Exception;
+}
+
+
+EmployeeBOImpl.java
+package com.bms.bs;
+
+import java.util.List;
+
+import com.bms.dao.EmployeeDAO;
+import com.bms.model.Employee;
+
+public class EmployeeBOImpl implements EmployeeBO {
+	private EmployeeDAO dao;
+
+	public void setDao(EmployeeDAO dao) {
+		this.dao = dao;
+	}
+
+	@Override
+	public int saveEmployee(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		int no = dao.insert(emp);
+		return no;
+	}
+
+	@Override
+	public boolean updateEmployee(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteEmployee(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Employee searchById(int id) throws Exception {
+		// TODO Auto-generated method stub
+		return dao.searchById(id);
+	}
+
+	@Override
+	public List<Employee> searchAllEmployees() throws Exception {
+		// TODO Auto-generated method stub
+		return dao.getAllEmployees1();
+	}
+
+}
+
+
+spring.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+<!-- Configure the DriverManagerDataSource -->
+<bean id="dsource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+	<property name="url" value="jdbc:mysql://localhost:3306/mydb"/>
+	<property name="username" value="root"/>
+	<property name="password" value="root"/>
+	
+</bean>
+<!-- Configure the  JdbcTemplet -->
+<bean id="jt" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dsource"/>
+</bean>
+<!-- Configure the  EmployeeDAOImpl -->
+<bean id="empdaoimpl" class="com.bms.dao.EmployeeDAOImpl">
+		<property name="jtemplet" ref="jt"/>
+</bean>
+<!-- Configure the EmployeeBOImpl -->
+<bean id="empboimpl" class="com.bms.bs.EmployeeBOImpl">
+	<property name="dao" ref="empdaoimpl"/>
+</bean>
+	
+</beans>
+
+
+ClientCode.java
+package com.bms.client;
+import java.util.List;
+import java.util.Scanner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.bms.bs.EmployeeBO;
+import com.bms.bs.EmployeeBOImpl;
+import com.bms.model.Employee;
+public class ClientCode {
+	public static void main(String[] args) throws Exception {
+
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		EmployeeBO embo = context.getBean("empboimpl", EmployeeBOImpl.class);
+		// Read the data (now from kb later of point we can data from request object in
+		// servlet application)
+
+		Scanner scanner = new Scanner(System.in);
+		/*
+		 * System.out.println("Enter  id,name,salary");
+		 * 
+		 * int id = scanner.nextInt(); scanner.nextLine(); String name =
+		 * scanner.nextLine(); double salary = scanner.nextDouble();
+		 * 
+		 * // Create the Employee Model object and explicitly inject the data into
+		 * Employee // object Employee emp = new Employee(); emp.setId(id);
+		 * emp.setName(name); emp.setSalary(salary);
+		 * 
+		 * // Now invoke the EmployeeBOImpl method save and store in db int no =
+		 * embo.saveEmployee(emp); if (no >= 1) { System.out.
+		 * printf(" %d record is successfully store in db please go and check it", no);
+		 * } else { System.out.println("Some error enable the Logger services..."); }
+		 * System.in.read();
+		 */
+		System.out.println("Enter Id to Search");
+
+		int searchId = scanner.nextInt();
+
+		Employee emp1 = embo.searchById(searchId);
+		if (emp1 != null) {
+			System.out.println("Data is Available");
+			System.out.println("EID\tENAME\tESALARY\n");
+			System.out.println(emp1.getId() + "\t" + emp1.getName() + "\t" + emp1.getSalary());
+		} else {
+			System.out.println("Data is not found");
+		}
+		System.out.println("Press \"Yes\" for Get All Record and \"No\" for Stop");
+		scanner.nextLine();
+		String option = scanner.nextLine();
+		if (option.equalsIgnoreCase("yes")) {
+			List<Employee> listEmployees = embo.searchAllEmployees();
+			if (listEmployees == null) {
+				System.out.println("No data");
+			} else {
+				System.out.println("Data is Available");
+				System.out.println("EID\tENAME\tESALARY\n");
+				for (Employee e : listEmployees) {
+					System.out.println(e.getId() + "\t" + e.getName() + "\t" + e.getSalary());
+					Thread.sleep(3000);
+				}
+			}
+
+		} else {
+			System.exit(1);
+		}
+
+	}
+
+}

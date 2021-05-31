@@ -1,0 +1,290 @@
+
+SpringDAOApplicationSimpleJDBC:
+================================
+
+Packages:
+
+com.bms.dao
+com.bms.bo
+com.bms.serv
+com.bms.model
+com.bms.client
+
+
+com.bms.model
+
+Employee.java
+
+package com.bms.model;
+public class Employee {
+	private int id;
+	private String name;
+	private double salary;
+
+	public Employee() {
+		System.out.println("Employee object is created...");
+	}
+
+	public Employee(int id, String name, double salary) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.salary = salary;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public double getSalary() {
+		return salary;
+	}
+
+	public void setSalary(double salary) {
+		this.salary = salary;
+	}
+
+}
+
+
+com.bms.dao
+
+EmployeeDAO.java
+
+package com.bms.dao;
+
+import java.util.List;
+
+import com.bms.model.Employee;
+
+public interface EmployeeDAO {
+
+	public int insert(Employee emp) throws Exception;
+
+	public boolean update(Employee emp) throws Exception;
+
+	public boolean delete(Employee emp) throws Exception;
+
+	public Employee searchById(int id) throws Exception;
+
+	public Employee searchByName(String name) throws Exception;
+
+	public List<Employee> getAllEmployees() throws Exception;
+}
+
+EmployeeDAOImpl.java
+package com.bms.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.List;
+
+import javax.sql.DataSource;
+
+import com.bms.model.Employee;
+
+public class EmployeeDAOImpl implements EmployeeDAO {
+
+	private DataSource ds;
+
+	public void setDs(DataSource ds) {
+		this.ds = ds;
+	}
+
+	@Override
+	public int insert(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		Connection con = ds.getConnection();
+		System.out.println("we got conn..");
+		String query = "insert into employee values(?,?,?)";
+		System.out.println("Query:" + query);
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setInt(1, emp.getId());
+		pstmt.setString(2, emp.getName());
+		pstmt.setDouble(3, emp.getSalary());
+		int no = pstmt.executeUpdate();
+		con.close();
+		return no;
+	}
+
+	@Override
+	public boolean update(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean delete(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Employee searchById(int id) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Employee searchByName(String name) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Employee> getAllEmployees() throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}
+
+com.bms.bo
+
+EmployeeBO.java
+package com.bms.bs;
+
+import com.bms.model.Employee;
+
+public interface EmployeeBO {
+	
+	public int  saveEmployee(Employee emp) throws Exception;
+	public boolean updateEmployee(Employee emp) throws Exception;
+	public boolean deleteEmployee(Employee emp) throws Exception;
+
+}
+
+EmployeeBOImpl.java
+package com.bms.bs;
+
+import com.bms.dao.EmployeeDAO;
+import com.bms.model.Employee;
+
+public class EmployeeBOImpl implements EmployeeBO {
+	private EmployeeDAO dao;
+
+	public void setDao(EmployeeDAO dao) {
+		this.dao = dao;
+	}
+
+	@Override
+	public int saveEmployee(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		int no = dao.insert(emp);
+		return no;
+	}
+
+	@Override
+	public boolean updateEmployee(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteEmployee(Employee emp) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}
+
+spring.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:util="http://www.springframework.org/schema/util"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-4.3.xsd
+http://www.springframework.org/schema/util
+http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<!-- Configure the DriverManagerDataSource -->
+<bean id="dsource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	<property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+	<property name="url" value="jdbc:mysql://localhost:3306/mydb"/>
+	<property name="username" value="root"/>
+	<property name="password" value="root"/>
+	
+</bean>
+
+
+<!-- Configure the  EmployeeDAOImpl -->
+<bean id="empdaoimpl" class="com.bms.dao.EmployeeDAOImpl">
+		<property name="ds" ref="dsource"/>
+</bean>
+
+<!-- Configure the EmployeeBOImpl -->
+<bean id="empboimpl" class="com.bms.bs.EmployeeBOImpl">
+	<property name="dao" ref="empdaoimpl"/>
+</bean>
+
+
+
+	
+</beans>
+
+
+com.bms.client
+
+ClientCode.java
+package com.bms.client;
+
+import java.util.Scanner;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.bms.bs.EmployeeBO;
+import com.bms.bs.EmployeeBOImpl;
+import com.bms.model.Employee;
+public class ClientCode {
+	public static void main(String[] args) throws Exception {
+		ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+		EmployeeBO embo = context.getBean("empboimpl", EmployeeBOImpl.class);
+		// Read the data (now from kb later of point we can data from request object in
+		// servlet application)
+
+		Scanner scanner = new Scanner(System.in);
+		System.out.println("Enter  id,name,salary");
+
+		int id = scanner.nextInt();
+		scanner.nextLine();
+		String name = scanner.nextLine();
+		double salary = scanner.nextDouble();
+
+		// Create the Employee Model object and explicitly inject the data into Employee
+		// object
+		Employee emp = new Employee();
+		emp.setId(id);
+		emp.setName(name);
+		emp.setSalary(salary);
+
+		// Now invoke the EmployeeBOImpl method save and store in db
+		int no = embo.saveEmployee(emp);
+		if (no >= 1) {
+			System.out.printf(" %d record is successfully store in db please go and check it", no);
+		} else {
+			System.out.println("Some error enable the Logger services...");
+		}
+
+	}
+
+}
+com.bms.serv
+EmployeeLogServ.java
+create and enable the services
