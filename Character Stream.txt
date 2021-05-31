@@ -1,0 +1,339 @@
+
+2.Character Stream(char-char):
+==============================
+- This deals with  only the text data.
+
+      |-> Reader  
+
+            InputStreamReader
+
+
+            BufferedReader
+
+
+eg:
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+public class Test {
+	public static void main(String[] args) throws IOException {
+	
+		 Reader isr = new InputStreamReader(System.in);
+		 BufferedReader br = new BufferedReader(isr);
+		 System.out.println("Enter the product information");
+		 System.out.println("enter the  product id,name,price");
+		 
+		 String pid = br.readLine();
+		 String pname = br.readLine();
+		 String pprice = br.readLine();
+		 
+		 int id = Integer.parseInt(pid);
+		 double price = Double.parseDouble(pprice);
+		 
+		 System.out.println(id);
+		 System.out.println(pname);
+		 System.out.println(price);
+
+	}
+}
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Test {
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		 System.out.println("Enter the product information");
+		 System.out.println("enter the  product id,name,price");
+		 
+		 String pid = br.readLine();
+		 String pname = br.readLine();
+		 String pprice = br.readLine();
+		 
+		 int id = Integer.parseInt(pid);
+		 double price = Double.parseDouble(pprice);
+		 
+		 System.out.println(id);
+		 System.out.println(pname);
+		 System.out.println(price);
+
+	}
+}
+
+Requirement : Reading the line-by-line  data from the resource.txt file.
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Test {
+	public static void main(String[] args) throws IOException {
+		
+		File file = new File("resource.txt");
+		FileInputStream fis = new FileInputStream(file);
+		BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+		String line;
+		while((line=br.readLine())!=null) {
+			System.out.println(line);
+		}
+		
+
+	}
+}
+
+
+|-> Writer:
+
+			PrintWriter
+			PrintStream
+			BufferedWriter
+			OutputStreamWriter
+
+
+
+Requirement:
+============
+Read the Employee Details from the Keyboard and store in emp.txt file.
+Sample Input:
+Enter the  Employee Details like Eid,Ename,Esalary
+1001
+RAJU
+30000.00
+Sample Output:
+Store Successfully in emp.txt file please check once
+
+
+emp.txt
+EID  ENAME  ESALARY
+1001 RAJU    30000.00
+
+
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+
+public class Test {
+	public static void main(String[] args) throws NumberFormatException, IOException {
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.println("Enter the  Employee Details like Eid,Ename,Esalar:");
+
+		int eid = Integer.parseInt(br.readLine());
+		String ename = br.readLine();
+		double salary = Double.parseDouble(br.readLine());
+
+		PrintStream ps = new PrintStream("emp.txt");
+		ps.println("EID\tENAME\tESALARY");
+		ps.println(eid + "\t" + ename + "\t" + salary);
+		System.out.println("successfully stored in emp.txt please go and check it.");
+		ps.close();
+
+	}
+}
+
+Properties:
+===========
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.Properties;
+
+public class Test {
+	public static void main(String[] args) throws IOException {
+		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+		map.put("url", "mydbc/login");
+		map.put("username", "system");
+		map.put("password", "12345");
+		
+		Properties p = new Properties();
+		p.setProperty("url", map.get("url"));
+		p.setProperty("username", map.get("username"));
+		p.setProperty("password", map.get("password"));
+
+		storeInProperteisFile(map, p);
+		retreiveDataFromProperties(p);
+		retreiveDataFromProperty();
+	}
+
+	private static void retreiveDataFromProperty() throws IOException {
+		// TODO Auto-generated method stub
+		FileInputStream fis = new FileInputStream("db.properties");
+		Properties newP = new Properties();
+		newP.load(fis);
+		System.out.println("URL:" + newP.getProperty("url"));
+		System.out.println("USERNAME:" + newP.getProperty("username"));
+		System.out.println("PASSWORD:" + newP.getProperty("password"));
+
+	}
+
+	private static void retreiveDataFromProperties(Properties p) {
+		System.out.println(p.get("url"));
+		System.out.println(p.get("username"));
+		System.out.println(p.get("password"));
+
+	}
+
+	private static void storeInProperteisFile(LinkedHashMap<String, String> map, Properties p)
+			throws FileNotFoundException, IOException {
+
+		File file = new File("db.properties");
+		PrintWriter pw = new PrintWriter(file);
+		p.store(pw, "Datbase Information");
+	}
+}
+
+
+
+
+
+Seralization:
+=============
+- Is a process of converting an object into  stream of bytes.
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+class Customer implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private int cid = 1001;
+	private String cname = "RAJU";
+	private String cemailId = "raju@gmail.com";
+	private transient  int pin = 12345;
+
+	public void printCustomerInfo() {
+		System.out.println("pin:" + pin);
+		System.out.println("Customer Id:" + cid);
+		System.out.println("Customer Name:" + cname);
+		System.out.println("Customer EmailId:" + cemailId);
+		System.out.println("serali id:" + serialVersionUID);
+	}
+}
+
+public class Test {
+	public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+		seralization();// person1
+		Thread.sleep(5000);
+		deseralization();// person2
+
+	}
+
+	private static void deseralization() throws IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		FileInputStream fis = new FileInputStream("customerob.txt");
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		Object o = ois.readObject();
+		if (o instanceof Customer) {
+			Customer c = (Customer) o;
+			c.printCustomerInfo();
+			// System.out.println(c.);
+		}
+
+	}
+
+	private static void seralization() throws FileNotFoundException, IOException {
+		FileOutputStream fos = new FileOutputStream("customerob.txt");
+		ObjectOutputStream oos = new ObjectOutputStream(fos);
+		Customer customer = new Customer();
+		oos.writeObject(customer);
+		System.out.println("successfully seralized the object into the resource..");
+		oos.close();
+		fos.close();
+	}
+
+}
+
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+class Person implements Serializable{
+	 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4926936480901853624L;
+	private int pid = 1000001;
+
+	public void show() {
+		System.out.println("personeid:" + pid);
+		System.out.println("svid"+serialVersionUID);
+	}
+}
+
+class Customer extends Person implements Serializable {
+ 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4L;
+	private int cid = 1001;
+	private String cname = "RAJU";
+	private String cemailId = "raju@gmail.com";
+	private transient int pin = 12345;
+
+	public void printCustomerInfo() {
+		System.out.println("pin:" + pin);
+		System.out.println("Customer Id:" + cid);
+		System.out.println("Customer Name:" + cname);
+		System.out.println("Customer EmailId:" + cemailId);
+		System.out.println("serali id:" + serialVersionUID);
+	}
+}
+
+public class Test {
+	public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+		seralization();// person1
+		Thread.sleep(5000);
+		deseralization();// person2
+
+	}
+
+	private static void deseralization() throws IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		FileInputStream fis = new FileInputStream("customerob.txt");
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		Object o = ois.readObject();
+		if (o instanceof Customer) {
+			Customer c = (Customer) o;
+			c.printCustomerInfo();
+			c.show();
+			// System.out.println(c.);
+		}
+
+	}
+
+	private static void seralization() throws FileNotFoundException, IOException {
+		FileOutputStream fos = new FileOutputStream("customerob.txt");
+		ObjectOutputStream oos = new ObjectOutputStream(fos);
+		Customer customer = new Customer();
+		oos.writeObject(customer);
+		System.out.println("successfully seralized the object into the resource..");
+		oos.close();
+		fos.close();
+	}
+
+}
+
