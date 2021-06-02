@@ -1,0 +1,348 @@
+Requriement:
+============
+
+Develop a simple application  for  user management system to perform CRUD  operation
+by using  servlet+jsp(jstl lib(which is used to remove the java code from jsp))+jdbc+mysql
+
+C-CREATE
+R-RETRIVE
+  -SINGLE
+  -MULTIPLE /ALL
+U-UPDATE
+D-DELETE
+
+ |->com.ums.model
+
+ |->com.ums.dao
+
+ |->com.ums.controller
+
+
+   |-> mysql-connector.jar
+   |-> jstl 1.x version.jar
+
+   |-> pages
+   		|-> homepage.html
+   		|-> user-form.html
+   		...............
+
+
+ |-> Database
+      |-> usm
+           |-> table ( users)
+           				id,name,email,country
+
+
+
+DBUtil.java
+
+package com.usm.dao;
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class DBUtill {
+	private String URL = "jdbc:mysql://localhost:3306/usm";
+	private String USERNAME = "root";
+	private String PASSWORD = "root";
+
+	public Connection getConn() throws Exception {
+		Class.forName("com.mysql.jdbc.Driver");
+		Connection con = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+		return con;
+	}
+}
+
+UserDAO.java
+package com.usm.dao;
+import java.util.List;
+import com.usm.dto.User;
+public interface UserDAO {
+
+	public int insertData(User user) throws Exception;
+
+	public boolean deleteById(int id) throws Exception;
+
+	public boolean updateData(User user) throws Exception;
+
+	public User getUserById(int id) throws Exception;
+
+	public List<User> getAllUsers() throws Exception;
+
+}
+
+UserDAOImpl.java
+
+package com.usm.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.usm.dto.User;
+
+public class UserDAOImpl implements UserDAO {
+	private DBUtill db;
+
+	public UserDAOImpl() {
+		db = new DBUtill();
+	}
+
+	@Override
+	public int insertData(User user) throws Exception {
+		String query = "insert into users values(?,?,?,?)";
+		System.out.println(query);
+		Connection con = db.getConn();
+		PreparedStatement pstmt = con.prepareStatement(query);
+		pstmt.setInt(1, user.getId());
+		pstmt.setString(2, user.getName());
+		pstmt.setString(3, user.getEmail());
+		pstmt.setString(4, user.getCountry());
+		return pstmt.executeUpdate();
+	}
+
+	@Override
+	public boolean deleteById(int id) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean updateData(User user) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public User getUserById(int id) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<User> getAllUsers() throws Exception {
+		List<User> list;
+		String query = "select * from users";
+		Connection con = db.getConn();
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery(query);
+		if (rs.next() == false) {
+			return null;
+		} else {
+			list = new ArrayList();
+			do {
+				User user = new User(rs.getInt("id"), rs.getString("name"), rs.getString("email"),
+						rs.getString("country"));
+				list.add(user);
+			} while (rs.next());
+		}
+
+		return list;
+	}
+
+}
+
+
+User.java
+package com.usm.dto;
+
+public class User {
+	private int id;
+	private String name;
+	private String email;
+	private String country;
+
+	public User(int id, String name, String email, String country) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.country = country;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getCountry() {
+		return country;
+	}
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+}
+
+UserController.java
+package com.usm.controller;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.usm.dao.UserDAOImpl;
+import com.usm.dto.User;
+
+@WebServlet("/uc")
+public class UserController extends HttpServlet {
+private static final long serialVersionUID = 1L;
+private UserDAOImpl udao;
+
+ @Override
+	public void init() throws ServletException {
+	    udao = new UserDAOImpl();
+ 	}
+	
+	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//capture the form-data from request object and create a transfer object and set it.
+		PrintWriter out = response.getWriter();
+		
+		int uid = Integer.parseInt(request.getParameter("id"));
+		String name= request.getParameter("name");
+		String email = request.getParameter("email");
+		String country  = request.getParameter("country");
+		
+		//create object for user
+		User user = new User(uid,name,email,country);
+	
+		try {
+			int no = udao.insertData(user);
+			
+			if(no>=1) {
+				//send req to  success  page
+				request.setAttribute("msg", "Successfully stored in db");
+				request.getRequestDispatcher("success.jsp").forward(request, response);
+				
+			}else {
+				//send  req to failure page
+				out.println("Some Issue please enter again");
+				request.getRequestDispatcher("failure.jsp").include(request, response);
+			}
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
+	}
+
+}
+
+success.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+	<form action="./uc" method="post">
+		ID    : <input  type="text" name="id"/><br/>
+		NAME  : <input  type="text" name="name"/><br/>
+		EMAIL : <input type="email" name="email"/><br/>
+		COUNTRY :<input type="country" name="country"/><br/>
+			<input type="submit" value="STORE"/>
+	</form>
+</body>
+</html>
+
+failure.jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+<a href="user-form.jsp">Click Here  to Back</a>
+</body>
+</html>
+
+
+homepage.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+  	 <h1>WELCOME TO HOME PAGE...</h1>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  
+  <hr/>
+    <a href="user-form.jsp">INSERT USER DATA</a>
+  
+  
+  </body>
+</html>	
+
+
+user-form.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+	<form action="./uc" method="post">
+		ID    : <input  type="text" name="id"/><br/>
+		NAME  : <input  type="text" name="name"/><br/>
+		EMAIL : <input type="email" name="email"/><br/>
+		COUNTRY :<input type="country" name="country"/><br/>
+			<input type="submit" value="STORE"/>
+	</form>
+</body>
+</html>
+
+====================================================================================================
